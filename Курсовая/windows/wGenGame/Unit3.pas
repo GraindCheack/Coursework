@@ -785,13 +785,19 @@ begin
     if i=1 then
     begin
       button.Caption:='Прервать';
-      button.Left:=Waiting.Width - 300;
-      button.Top:=Waiting.Height - 100;
-      button.OnClick:=
+      button.Left:=Waiting.Width div 2+100;
+      button.Top:=Waiting.Height div 2+100;
+      button.OnClick:=TWaiting(Waiting).interruption;
+    end
+    else
+    begin
+      button.Caption:='Начать';
+      button.Left:=Waiting.Width div 2;
+      button.Top:=Waiting.Height div 2;
+      button.OnClick:=TWaiting(Waiting).Start;
     end;
   end;
   createMap(mapArr, dotArr, amountBorder, mapLength-2, different);
-  tmr1.Enabled:=True;
   flag:=False;
 end;
 

@@ -1,0 +1,95 @@
+object GenGame: TGenGame
+  Left = 370
+  Top = 163
+  Width = 1279
+  Height = 760
+  Caption = 'GenGame'
+  Color = clBtnText
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  OnActivate = FormActivate
+  OnClose = FormClose
+  OnCreate = FormCreate
+  PixelsPerInch = 96
+  TextHeight = 13
+  object lbl1: TLabel
+    Left = 1000
+    Top = 208
+    Width = 13
+    Height = 48
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindow
+    Font.Height = -40
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object lbl2: TLabel
+    Left = 936
+    Top = 40
+    Width = 276
+    Height = 97
+    Caption = '0:00:00'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindow
+    Font.Height = -80
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object Button1: TButton
+    Left = 1008
+    Top = 648
+    Width = 217
+    Height = 57
+    Caption = #1042#1099#1093#1086#1076' '#1074' '#1075#1083#1072#1074#1085#1086#1077' '#1084#1077#1085#1102
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clInfoText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 0
+    OnClick = Button1Click
+  end
+  object Button2: TButton
+    Left = 1008
+    Top = 568
+    Width = 217
+    Height = 57
+    Caption = #1054#1095#1080#1089#1090#1080#1090#1100
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clInfoText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 1
+    OnClick = Button2Click
+  end
+  object Button3: TButton
+    Left = 1008
+    Top = 488
+    Width = 217
+    Height = 57
+    Caption = #1047#1072#1085#1086#1074#1086
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clInfoText
+    Font.Height = -16
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 2
+    OnClick = Button3Click
+  end
+  object tmr1: TTimer
+    Enabled = False
+    OnTimer = tmr1Timer
+    Left = 40
+    Top = 24
+  end
+end

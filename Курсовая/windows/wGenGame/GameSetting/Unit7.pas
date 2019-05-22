@@ -16,19 +16,20 @@ type
   end;
   TGameSetting = class(TForm)
     lbl1: TLabel;
-    btn1: TButton;
-    btn2: TButton;
-    btn3: TButton;
     Label1: TLabel;
     lbl2: TLabel;
     btn4: TSpeedButton;
     btn5: TSpeedButton;
+    btn1: TSpeedButton;
+    btn2: TSpeedButton;
+    btn3: TSpeedButton;
     procedure btn1Click(Sender: TObject);
     procedure btn2Click(Sender: TObject);
     procedure btn3Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btn4Click(Sender: TObject);
     procedure btn5Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -53,7 +54,7 @@ end;
 
 procedure TGameSetting.btn2Click(Sender: TObject);
 begin
-  mapLength := 10;
+  mapLength := 9;
   packImages := 2;
   LineWidth := 26;
   Close;
@@ -61,10 +62,10 @@ end;
 
 procedure TGameSetting.btn3Click(Sender: TObject);
 begin
-  mapLength := 14;
+  mapLength := 11;
   packImages := 3;
   LineWidth := 18;
-  close;
+  close;      
 end;
 
 procedure TGameSetting.FormCreate(Sender: TObject);
@@ -97,6 +98,12 @@ begin
   first:=first^.next;
   different:=first^.difInt;
   lbl2.Caption:=first^.difStr;
+end;
+
+procedure TGameSetting.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  flagforThread:=False;
 end;
 
 end.

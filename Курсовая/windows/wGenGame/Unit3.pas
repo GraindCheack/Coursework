@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, DBCtrls, ExtCtrls, jpeg;
+  Dialogs, StdCtrls, DBCtrls, ExtCtrls, jpeg,
+  acPNG;
 
 type
   imageArray = array of array of TImage;
@@ -31,6 +32,7 @@ type
     Button3: TButton;
     tmr1: TTimer;
     lbl2: TLabel;
+    img1: TImage;
     procedure Button1Click(Sender: TObject);
     procedure ShowGameSettingMenu(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -48,6 +50,16 @@ type
   public
     { Public declarations }
   end;
+  TFirstThread = class(TThread)
+  private
+  protected
+    procedure Execute; override;
+  end;
+  TSecondThread = class(TThread)
+  private
+  protected
+    procedure Execute; override;
+  end;
 
 var
   GenGame: TGenGame;
@@ -55,8 +67,10 @@ var
   mapLength, packImages, LineWidth, checkI, checkJ, check, different, amountBorder: integer;
   mapArr, changeMapArr: intDArr;
   dotArr, checkDotArr: dotDArr;
-  flag: Boolean;
+  flag, flagforThread, flagForBreak: Boolean;
   sec: TDateTime;
+  firstThread: TFirstThread;
+  secondThread: TSecondThread;
 
 implementation
 
@@ -122,7 +136,7 @@ begin
       numberArr[randomValueI, RandomValueJ]:=tempArr[randomValueI-1,RandomValueJ-1];
       Inc(amountArr[tempArr[randomValueI-1, RandomValueJ-1]]);
       imageLoad:=TPicture.Create;
-      imageLoad.LoadFromFile('images\WhiteColor' + IntToStr(numberArr[randomValueI, RandomValueJ]) + '.jpg');
+      imageLoad.LoadFromFile('images\WhiteColor' + IntToStr(numberArr[randomValueI, RandomValueJ]) + '.png');
       squareArray[randomValueI, RandomValueJ].Picture:=imageLoad;
       i:=i+1;
     end;
@@ -253,13 +267,13 @@ begin
     if (first<>nil) and
     (not(
     ((dotArr[first^.i, first^.j].up=False) and (dotArr[first^.i-1, first^.j].flag=False)
-    and (first^.i-1-b>=0) and ((tempArr[first^.i-1-b, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1)))
+    and (first^.i-1-b>=0) and (first^.j-c>=0) and ((tempArr[first^.i-1-b, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1)))
     or ((dotArr[first^.i, first^.j].right=False) and (dotArr[first^.i, first^.j+1].flag=False)
-    and (first^.j-c+1<N) and ((tempArr[first^.i-b, first^.j-c+1]=tempArr[first^.i-b, first^.j-c]+1)))
+    and (first^.j-c+1<N) and (first^.i-b>=0) and ((tempArr[first^.i-b, first^.j-c+1]=tempArr[first^.i-b, first^.j-c]+1)))
     or ((dotArr[first^.i, first^.j].down=False) and (dotArr[first^.i+1, first^.j].flag=False)
-    and (first^.i-b+1<N) and ((tempArr[first^.i-b+1, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1)))
+    and (first^.i-b+1<N) and (first^.j-c>=0) and ((tempArr[first^.i-b+1, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1)))
     or ((dotArr[first^.i, first^.j].left=False) and (dotArr[first^.i, first^.j-1].flag=False)
-    and (first^.j-c-1>=0) and ((tempArr[first^.i-b, first^.j-c-1]=tempArr[first^.i-b, first^.j-c]+1)))
+    and (first^.j-c-1>=0) and (first^.i-b>=0) and ((tempArr[first^.i-b, first^.j-c-1]=tempArr[first^.i-b, first^.j-c]+1)))
     ))
     then
     begin
@@ -296,7 +310,7 @@ begin
     end;
     randomValue:=Random(4)+1;
     if (first<>nil)and(randomValue = 1) and (dotArr[first^.i, first^.j].up=False) and (dotArr[first^.i-1, first^.j].flag=False)
-    and (first^.i-1-b>=0) and ((tempArr[first^.i-1-b, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1))then
+    and (first^.i-1-b>=0) and (first^.j-c>=0) and ((tempArr[first^.i-1-b, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1))then
     begin
       dotArr[first^.i, first^.j].up:=True;
       dotArr[first^.i, first^.j].flag:=True;
@@ -306,7 +320,7 @@ begin
     end
     else
     if (first<>nil)and(randomValue = 2) and (dotArr[first^.i, first^.j].right=False) and (dotArr[first^.i, first^.j+1].flag=False)
-    and (first^.j-c+1<N) and ((tempArr[first^.i-b, first^.j-c+1]=tempArr[first^.i-b, first^.j-c]+1)) then
+    and (first^.j-c+1<N) and (first^.i-b>=0) and ((tempArr[first^.i-b, first^.j-c+1]=tempArr[first^.i-b, first^.j-c]+1)) then
     begin
       dotArr[first^.i, first^.j].right:=True;
       dotArr[first^.i, first^.j].flag:=True;
@@ -316,7 +330,7 @@ begin
     end
     else
     if (first<>nil)and(randomValue = 3) and (dotArr[first^.i, first^.j].down=False) and (dotArr[first^.i+1, first^.j].flag=False)
-    and (first^.i-b+1<N) and ((tempArr[first^.i-b+1, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1)) then
+    and (first^.i-b+1<N) and (first^.j-c>=0) and ((tempArr[first^.i-b+1, first^.j-c]=tempArr[first^.i-b, first^.j-c]+1)) then
     begin
       dotArr[first^.i, first^.j].down:=True;
       dotArr[first^.i, first^.j].flag:=True;
@@ -326,7 +340,7 @@ begin
     end
     else
     if (first<>nil)and(randomValue = 4) and (dotArr[first^.i, first^.j].left=False) and (dotArr[first^.i, first^.j-1].flag=False)
-    and (first^.j-c-1>=0) and ((tempArr[first^.i-b, first^.j-c-1]=tempArr[first^.i-b, first^.j-c]+1)) then
+    and (first^.j-c-1>=0) and (first^.i-b>=0) and ((tempArr[first^.i-b, first^.j-c-1]=tempArr[first^.i-b, first^.j-c]+1)) then
     begin
       dotArr[first^.i, first^.j].left:=True;
       dotArr[first^.i, first^.j].flag:=True;
@@ -649,6 +663,7 @@ procedure TGenGame.ImageHClick(Sender: TObject);
 var
   i, j, k: Integer;
 begin
+  Application.ProcessMessages;
   i:=(Sender as TImage).Tag div 100;
   j:=(Sender as TImage).Tag mod 100 div 10;
   k:=(Sender as TImage).Tag mod 10;
@@ -678,6 +693,7 @@ procedure TGenGame.ImageVClick(Sender: TObject);
 var
   i, j, k: Integer;
 begin
+  Application.ProcessMessages;
   i:=(Sender as TImage).Tag div 100;
   j:=(Sender as TImage).Tag mod 100 div 10;
   k:=(Sender as TImage).Tag mod 10;
@@ -725,6 +741,7 @@ begin
       imageLoad:=TPicture.Create;
       imageLoad.LoadFromFile(imageLocation);
       image.Picture:=imageLoad;
+      image.Proportional:=True;
       leftL:= leftL + step;
       imageArr[i, j] := image;
       imageArr[i, j].Tag := i*100 + j*10;
@@ -736,14 +753,14 @@ end;
 procedure TGenGame.ShowGameSettingMenu(Sender: TObject);
 var
   squareL, i, j: Integer;
-  button: TButton;
 begin
-  GameSetting.ShowModal;
-  Waiting.Show;
-  Waiting.Height:=GenGame.Height;
-  Waiting.Width:=GenGame.Width;
-  Waiting.Left:=GenGame.Left;
-  Waiting.Top:=GenGame.Top;
+  Application.ProcessMessages;
+  Waiting.btn2.Hide;
+  Waiting.btn1.Hide;
+  flagforThread:=True;
+  while flagforThread do
+  begin
+  end;
   SetLength(squareArray, mapLength, mapLength);
   SetLength(lineArray1, mapLength-1, mapLength-2);
   SetLength(spyLine1, mapLength-1, mapLength-2);
@@ -753,58 +770,36 @@ begin
   SetLength(mapArr, mapLength, mapLength);
   SetLength(checkDotArr, mapLength+1, mapLength+1);
   squareL:=600 div mapLength;
-  createGameMenu(GenGame, 'images\WhiteColor.jpg', squareL, squareL, 64, 256, mapLength, mapLength, squareL, squareArray);
-  createGameMenu(GenGame, 'images\GenGameImages' + IntToStr(packImages) + '\LineImageH.jpg', LineWidth, squareL, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-2, squareL, lineArray1);
-  createGameMenu(GenGame, 'images\WhiteColor.jpg', LineWidth, squareL, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-2, squareL, spyLine1);
-  createGameMenu(GenGame, 'images\GenGameImages' + IntToStr(packImages) + '\LineImageV.jpg', squareL, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-2, mapLength-1, squareL, lineArray2);
-  createGameMenu(GenGame, 'images\WhiteColor.jpg', squareL, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-2, mapLength-1, squareL, spyLine2);
-  createGameMenu(GenGame, 'images\GenGameImages' + IntToStr(packImages) + '\DotImage.jpg', LineWidth, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-1, squareL, dotArrayImage);
+  createGameMenu(GenGame, 'images\WhiteColor.png', squareL, squareL, 64, 256, mapLength, mapLength, squareL, squareArray);
+  createGameMenu(GenGame, 'images\LineImageH.png', LineWidth, squareL, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-2, squareL, lineArray1);
+  createGameMenu(GenGame, 'images\WhiteColor.png', LineWidth, squareL, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-2, squareL, spyLine1);
+  createGameMenu(GenGame, 'images\LineImageV.png', squareL, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-2, mapLength-1, squareL, lineArray2);
+  createGameMenu(GenGame, 'images\WhiteColor.png', squareL, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-2, mapLength-1, squareL, spyLine2);
+  createGameMenu(GenGame, 'images\DotImage.png', LineWidth, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-1, squareL, dotArrayImage);
+  Waiting.btn1.Show;
   for i:=0 to mapLength-2 do
     for j:=0 to mapLength-3 do
     begin
       lineArray1[i, j].Hide;
-      spyLine1[i, j].Picture.Bitmap.Transparent:=True;
-      spyLine1[i, j].Picture.Bitmap.TransparentColor:=clWhite;
       spyLine1[i, j].OnClick := imageHClick;
     end;
   for i:=0 to mapLength-3 do
     for j:=0 to mapLength-2 do
     begin
       lineArray2[i, j].Hide;
-      spyLine2[i, j].Picture.Bitmap.Transparent:=True;
-      spyLine2[i, j].Picture.Bitmap.TransparentColor:=clWhite;
       spyLine2[i, j].OnClick := ImageVClick;
     end;
-  for i:=1 to 2 do
-  begin
-    button:=TButton.Create(Waiting);
-    button.Parent:=Waiting;
-    button.Height:=65;
-    button.Width:=200;
-    button.Font.Size:=20;
-    if i=1 then
-    begin
-      button.Caption:='Прервать';
-      button.Left:=Waiting.Width div 2+100;
-      button.Top:=Waiting.Height div 2+100;
-      button.OnClick:=TWaiting(Waiting).interruption;
-    end
-    else
-    begin
-      button.Caption:='Начать';
-      button.Left:=Waiting.Width div 2;
-      button.Top:=Waiting.Height div 2;
-      button.OnClick:=TWaiting(Waiting).Start;
-    end;
-  end;
   createMap(mapArr, dotArr, amountBorder, mapLength-2, different);
   flag:=False;
+  Waiting.btn2.Show;
 end;
 
 procedure clearGame;
 var
   i, j: Integer;
 begin
+  GenGame.lbl2.Caption:='0:00:00';
+  GenGame.tmr1.Enabled:=False;
   for i:=0 to mapLength-1 do
     for j:=0 to mapLength-1 do
       squareArray[i, j].Free;
@@ -830,6 +825,7 @@ end;
 
 procedure TGenGame.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  Application.ProcessMessages;
   flag:=True;
   clearGame;
 end;
@@ -865,24 +861,53 @@ begin
     end;
 end;
 
+procedure TSecondThread.Execute;
+begin
+  while flagforThread do
+  begin
+  end;
+  GameSetting.Show;
+  GenGame.ShowGameSettingMenu(GenGame);
+  secondThread.Terminate;
+end;
+
+procedure TFirstThread.Execute;
+begin
+  Waiting.Show;
+  flagforThread:=False;
+  Waiting.Left:=GenGame.Left+3;
+  Waiting.Top:=GenGame.Top;
+  firstThread.Terminate
+end;
+
 procedure TGenGame.Button3Click(Sender: TObject);
 begin
-  lbl2.Caption:='0:00:00';
-  tmr1.Enabled:=False;
   flag:=True;
   clearGame;
-  GenGame.ShowGameSettingMenu(GenGame);
+  FormActivate(GenGame);
 end;
 
 procedure TGenGame.FormActivate(Sender: TObject);
 begin
-  if flag then
-    GenGame.ShowGameSettingMenu(GenGame);
+  if flag and (not flagForBreak) then
+  begin
+    flagforThread:=True;
+    firstThread := nil;
+    firstThread := TFirstThread.Create(true);
+    firstThread.FreeOnTerminate := True;
+    firstThread.Resume;
+    secondThread := nil;
+    secondThread := TSecondThread.Create(true);
+    secondThread.Priority:=tpTimeCritical;
+    secondThread.FreeOnTerminate := True;
+    secondThread.Resume;
+  end;
 end;
 
 procedure TGenGame.FormCreate(Sender: TObject);
 begin
   flag:=True;
+  flagForBreak:=false;
   sec:=StrToTime('00:00:01');
 end;
 
@@ -890,5 +915,6 @@ procedure TGenGame.tmr1Timer(Sender: TObject);
 begin
   lbl2.Caption:=TimeToStr(StrToTime(lbl2.Caption)+sec);
 end;
+
 
 end.

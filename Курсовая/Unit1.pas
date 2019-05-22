@@ -4,91 +4,79 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, jpeg, ExtCtrls;
+  Dialogs, StdCtrls, Buttons, jpeg, ExtCtrls,
+  Animate, GIFCtrl,
+  acPNG;
 
 type
   TGame = class(TForm)
-    btn1: TSpeedButton;
-    btn2: TSpeedButton;
-    btn3: TSpeedButton;
-    btn4: TSpeedButton;
-    btn5: TSpeedButton;
     img1: TImage;
-    procedure btn1Click(Sender: TObject);
-    procedure btn5Click(Sender: TObject);
-    procedure OnCreate(Sender: TObject);
-    procedure btn2Click(Sender: TObject);
+    tmr1: TTimer;
+    procedure FormActivate(Sender: TObject);
+    procedure tmr1Timer(Sender: TObject);
+    procedure img1Click(Sender: TObject);
   private
     { Private declarations }
   public
     { Public declarations }
   end;
+  TFirstThreadGen = class(TThread)  // объявление класса потока, где процедура execute выполняется при создании потока
+  private
+  protected
+    procedure Execute; override;
+  end;
 
 var
   Game: TGame;
-  showButton, showSetting, showHelp, showLoad, showScore: Boolean;
-  buttonGenMenu: array [1..2] of TSpeedButton;
+  threadGen: TFirstThreadGen;
+  iAn: Integer;
+  flag: Boolean;
 
 implementation
 
-uses Unit3, Unit4, Unit5, Unit6;
+uses Unit9;
 
 {$R *.dfm}
 
-procedure TGame.OnCreate(Sender: TObject);
-var
-  i: integer;
-  speedButton: TSpeedButton;
-  map: TBitmap;
+procedure TFirstThreadGen.Execute; // действия, которые в потоке. Здесь у меня открывается форма в новом потоке
 begin
-  for i:=1 to 2 do
-  begin
-    speedButton:=TSpeedButton.Create(self);
-    speedButton.Parent:=Game;
-    speedButton.Height:=49;
-    speedButton.Width:=145;
-    speedButton.Tag:=i;
-    speedButton.Hide;
-    buttonGenMenu[i]:=speedButton;
-  end;
-  map:=TBitmap.Create;
-  buttonGenMenu[1].Left:=128;
-  buttonGenMenu[1].Top:=32;
-  map.LoadFromFile('images\Buttons_im\setting.bmp');
-  buttonGenMenu[1].Glyph:=map;
-  buttonGenMenu[2].Left:=40;
-  buttonGenMenu[2].Top:=104;
-  buttonGenMenu[2].Glyph:=map;
-  showButton:=True;
+  GameAn.Show;
+  threadGen.Terminate;
 end;
 
-procedure TGame.btn1Click(Sender: TObject);
+procedure TGame.tmr1Timer(Sender: TObject);
 begin
-  close;
-end;
-
-procedure TGame.btn5Click(Sender: TObject);
-begin
-  if showButton then
+  if Game.Showing then
   begin
-    buttonGenMenu[1].Show;
-    buttonGenMenu[2].Show;
-    showButton:=False;
-  end
-  else
-  begin
-    buttonGenMenu[1].Hide;
-    buttonGenMenu[2].Hide;
-    showButton:=True;
+    Application.ProcessMessages;
+    if iAn=300 then
+      iAn:=0;
+    Game.img1.Picture.LoadFromFile('windows\wAnimation\animate\'+intToStr(1000+iAn)+'.png');
+    iAn:=iAn+1;
+    GameAn.Top:=Game.Top;
+    GameAn.Left:=Game.Left;
+    GameAn.Height:=Game.Height;
+    GameAn.Width:=Game.Width;
   end;
 end;
 
-
-procedure TGame.btn2Click(Sender: TObject);
+procedure TGame.FormActivate(Sender: TObject);
 begin
-  Game.Hide;
-  GenGame.ShowModal;
-  Game.Show;
+  if flag then
+  begin
+    Close;
+    Exit;
+  end;
+  iAn:=0;
+  threadGen := nil;
+  threadGen := TFirstThreadGen.Create(true); // выделение памяти и само создание потока
+  threadGen.FreeOnTerminate := True;
+  threadGen.Resume;  // поток запускается. Выполняется Execute
+end;
+
+procedure TGame.img1Click(Sender: TObject);
+begin
+  GameAn.BringToFront;
 end;
 
 end.

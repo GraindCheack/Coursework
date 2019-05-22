@@ -1,0 +1,27 @@
+
+C++Builder 5.x:
+
+Put all source files from this archive into RX\Units directory.
+
+Uninstall previous installed version of RX Library from C++Builder IDE.
+Remove previously compiled RX packages (if any) RXCTL5.BPL, RXDB5.BPL,
+RXBDE5.BPL, DCLRX5.BPL, DCLRXDB5.BPL and DCLRXBD5.BPL from your hard disk.
+
+Be sure that linker option "Use dynamic RTL" is unchecked.
+Use "File\Open..." menu item of C++Builder IDE to open RX' runtime
+package RXCTL5.BPK. Then use "Project\Make..." or "Project\Build..." menu
+item to compile package RXCTL5.BPK. After compiling repeat that consistently
+for each of the other RX Library packages (.BPK files) RXDB5.BPK,
+RXBDE5.BPK, DCLRX5.BPK, DCLRXDB5.BPK and DCLRXBD5.BPK (be sure to keep
+the sequence mentioned). For runtime packages (RXCTL5, RXDB5 and RXBDE5)
+put compiled BPL files into directory that is accessible through the search
+PATH (DOS envirounment variable, not IDE search path; for example, in the
+Windows\System directory). After compiling RX packages you must install RX
+design-time packages into the C++Builder IDE.
+
+Use "Component\Install packages..." menu item to open "Packages" dialog
+box. Then click "Add..." button and locate DCLRX5.BPL in the directory
+specified as your BPL output directory (it is $(BCB)\Projects\Bpl by default)
+and click "OK" to install package into IDE. After installing DCLRX5 package
+install DCLRXDB5 and DCLRXBD5 packages as above.
+

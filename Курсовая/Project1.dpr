@@ -9,7 +9,8 @@ uses
   Unit5 in 'windows\wScore\Unit5.pas' {Score},
   Unit6 in 'windows\wSetting\Unit6.pas' {Setting},
   Unit7 in 'windows\wGenGame\GameSetting\Unit7.pas' {GameSetting},
-  Unit8 in 'windows\wGenGame\Waiting\Unit8.pas' {Waiting};
+  Unit8 in 'windows\wGenGame\Waiting\Unit8.pas' {Waiting},
+  Unit9 in 'windows\wAnimation\Unit9.pas' {GameAn};
 
 {$R *.res}
 
@@ -23,5 +24,6 @@ begin
   Application.CreateForm(TSetting, Setting);
   Application.CreateForm(TGameSetting, GameSetting);
   Application.CreateForm(TWaiting, Waiting);
+  Application.CreateForm(TGameAn, GameAn);
   Application.Run;
 end.

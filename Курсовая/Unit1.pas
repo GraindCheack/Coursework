@@ -14,7 +14,7 @@ type
     tmr1: TTimer;
     procedure FormActivate(Sender: TObject);
     procedure tmr1Timer(Sender: TObject);
-    procedure img1Click(Sender: TObject);
+    procedure FormHide(Sender: TObject);
   private
     { Private declarations }
   public
@@ -46,18 +46,10 @@ end;
 
 procedure TGame.tmr1Timer(Sender: TObject);
 begin
-  if Game.Showing then
-  begin
-    Application.ProcessMessages;
-    if iAn=300 then
-      iAn:=0;
-    Game.img1.Picture.LoadFromFile('windows\wAnimation\animate\'+intToStr(1000+iAn)+'.png');
-    iAn:=iAn+1;
-    GameAn.Top:=Game.Top;
-    GameAn.Left:=Game.Left;
-    GameAn.Height:=Game.Height;
-    GameAn.Width:=Game.Width;
-  end;
+  if iAn=300 then
+    iAn:=0;
+  Game.img1.Picture.LoadFromFile('windows\wAnimation\animate\'+intToStr(1000+iAn)+'.png');
+  iAn:=iAn+1;
 end;
 
 procedure TGame.FormActivate(Sender: TObject);
@@ -72,11 +64,16 @@ begin
   threadGen := TFirstThreadGen.Create(true); // выделение памяти и само создание потока
   threadGen.FreeOnTerminate := True;
   threadGen.Resume;  // поток запускается. Выполняется Execute
+  GameAn.Top:=Game.Top;
+  GameAn.Left:=Game.Left;
+  GameAn.Height:=Game.Height;
+  GameAn.Width:=Game.Width;
+  tmr1.Enabled:=True;
 end;
 
-procedure TGame.img1Click(Sender: TObject);
+procedure TGame.FormHide(Sender: TObject);
 begin
-  GameAn.BringToFront;
+  tmr1.Enabled:=False;
 end;
 
 end.

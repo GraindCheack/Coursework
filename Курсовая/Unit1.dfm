@@ -14,6 +14,7 @@ object Game: TGame
   OldCreateOrder = False
   Position = poScreenCenter
   OnActivate = FormActivate
+  OnHide = FormHide
   PixelsPerInch = 96
   TextHeight = 13
   object img1: TImage
@@ -22,10 +23,9 @@ object Game: TGame
     Width = 1188
     Height = 678
     AutoSize = True
-    OnClick = img1Click
   end
   object tmr1: TTimer
-    Interval = 50
+    Interval = 60
     OnTimer = tmr1Timer
     Left = 48
     Top = 40

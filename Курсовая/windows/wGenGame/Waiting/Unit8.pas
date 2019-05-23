@@ -39,7 +39,8 @@ uses Unit3,
 procedure TWaiting.btn2Click(Sender: TObject);
 begin
   GenGame.tmr1.Enabled:=True;
-  Waiting.Close;
+  GenGame.Show;
+  Waiting.Hide;
 end;
 
 procedure TWaiting.btn1Click(Sender: TObject);

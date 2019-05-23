@@ -28,9 +28,6 @@ implementation
 
 uses Unit3, Unit4, Unit5, Unit6, Unit1;
 
-var
-  iAn: Integer;
-
 {$R *.dfm}
 
 procedure TGameAn.btn1Click(Sender: TObject);

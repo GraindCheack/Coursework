@@ -27,12 +27,14 @@ type
   dotDArr = array of array of dot;
   TGenGame = class(TForm)
     Button1: TButton;
-    lbl1: TLabel;
     Button2: TButton;
     Button3: TButton;
     tmr1: TTimer;
     lbl2: TLabel;
     img1: TImage;
+    btn1: TButton;
+    btn2: TButton;
+    tmr2: TTimer;
     procedure Button1Click(Sender: TObject);
     procedure ShowGameSettingMenu(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -45,6 +47,10 @@ type
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure tmr1Timer(Sender: TObject);
+    procedure clearGame;
+    procedure btn1Click(Sender: TObject);
+    procedure tmr2Timer(Sender: TObject);
+    procedure btn2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -64,9 +70,10 @@ type
 var
   GenGame: TGenGame;
   squareArray, lineArray1, lineArray2, spyLine1, spyLine2, dotArrayImage: imageArray;
-  mapLength, packImages, LineWidth, checkI, checkJ, check, different, amountBorder: integer;
+  mapLength, LineWidth, checkI, checkJ, check, different, amountBorder, startI, startJ, counter: integer;
+  firstForHint: stackPointer;
   mapArr, changeMapArr: intDArr;
-  dotArr, checkDotArr: dotDArr;
+  dotArr, checkDotArr, tempDotArr: dotDArr;
   flag, flagforThread, flagForBreak: Boolean;
   sec: TDateTime;
   firstThread: TFirstThread;
@@ -74,7 +81,7 @@ var
 
 implementation
 
-uses Unit7, Unit8;
+uses Unit7, Unit8, Unit10;
 
 {$R *.dfm}
 
@@ -126,12 +133,12 @@ begin
   Randomize;
   nStep:=N*4-7+Random(3);
   i:=0;
-  while (i<>nStep) and (flag=True) do
+  while (i<>nStep) and (flag=True) and (amountBorder>=N*N) do
   begin
     randomValueI:=Random(N)+1;
     randomValuej:=Random(N)+1;
-    if ((tempArr[randomValueI-1, RandomValueJ-1]>0) and (amountArr[tempArr[randomValueI-1, RandomValueJ-1]]<N*3+4*(N-4)) and (numberArr[randomValueI, RandomValueJ]=-1))
-    or ((amountArr[tempArr[randomValueI-1, RandomValueJ-1]]=0)and(amountArr[0]<N*(N-4)-2)) then
+    if ((tempArr[randomValueI-1, RandomValueJ-1]>0) and (amountArr[tempArr[randomValueI-1, RandomValueJ-1]]<(nStep-(N-2))) and (numberArr[randomValueI, RandomValueJ]=-1))
+    or ((tempArr[randomValueI-1, RandomValueJ-1]=0)and(amountArr[0]<N-1)) then
     begin
       numberArr[randomValueI, RandomValueJ]:=tempArr[randomValueI-1,RandomValueJ-1];
       Inc(amountArr[tempArr[randomValueI-1, RandomValueJ-1]]);
@@ -461,7 +468,7 @@ begin
   end;
 end;
 
-procedure solutionMap(var numberArr: intDArr; dotArr: dotDArr; var amountBorder, N, dif: integer);
+procedure solutionMap(var numberArr: intDArr; var dotArr: dotDArr; var amountBorder, N, dif: integer);
 var
   i, j, nStep, step: Integer;
   flag: Boolean;
@@ -470,7 +477,7 @@ var
 begin
   flag:=False;
   amountBorder:=0;
-  while (not flag) and (amountBorder<N*N) do
+  while (not flag) or (amountBorder<N*N) do
   begin
     SetLength(dotArr, N+3, N+3);
     for i:=1 to N+1 do
@@ -497,6 +504,8 @@ begin
     Randomize;
     i:=Random(N)+1;
     j:=Random(N)+1;
+    startI:=i;
+    startJ:=j;
     New(first);
     checkFirst:=nil;
     lastFirst:=nil;
@@ -561,7 +570,7 @@ begin
         checkWay(N, i, j, 1, 2, first, dotArr, tempArr, flag, True);
       if not flag then
         checkWay(N, i, j, 2, 1, first, dotArr, tempArr, flag, True);
-      if flag then
+      if (flag) then
         hideNumber(dotArr, numberArr, flag, amountBorder, N);
     end;
     if ((step<nStep) and (step>=0)) or (not flag) then
@@ -582,7 +591,7 @@ begin
   Close;
 end;
 
-function checkUser(dotArr: dotDArr; mainNumberArr: intDArr; N, i, j, amountBorder: Integer): Boolean;
+function checkUser(dotArr: dotDArr; mainNumberArr: intDArr; N, amountBorder: Integer): Boolean;
 var
   a, b, c: Integer;
   flag: Boolean;
@@ -614,7 +623,7 @@ begin
           first^.j:=b;
           first^.next:=nil;
           a:=0;
-          while (flag) and ((a<amountBorder-N*3) or (first^.i<>c) or (first^.j<>b)) do
+          while (flag) and ((a<amountBorder-N*4) or (first^.i<>c) or (first^.j<>b)) do
           begin
             if a=1 then
               tempDotArr[first^.next^.i, first^.next^.j].flag:=True;
@@ -659,11 +668,18 @@ begin
   Result:=flag;
 end;
 
+procedure UserWin;
+begin
+  Win.Left:=GenGame.Left;
+  Win.Top:=GenGame.Top;
+  GenGame.Hide;
+  Win.Show;
+end;
+
 procedure TGenGame.ImageHClick(Sender: TObject);
 var
   i, j, k: Integer;
 begin
-  Application.ProcessMessages;
   i:=(Sender as TImage).Tag div 100;
   j:=(Sender as TImage).Tag mod 100 div 10;
   k:=(Sender as TImage).Tag mod 10;
@@ -683,17 +699,14 @@ begin
     checkDotArr[i+1,j+1].right:=false;
     checkDotArr[i+1,j+2].left:=false;
   end;
-  if checkUser(checkDotArr, mapArr, mapLength-1, i, j, amountBorder) then
-    lbl1.Caption:='True'
-  else
-    lbl1.Caption:='False';
+  if checkUser(checkDotArr, mapArr, mapLength-1, amountBorder) then
+    UserWin;
 end;
 
 procedure TGenGame.ImageVClick(Sender: TObject);
 var
   i, j, k: Integer;
 begin
-  Application.ProcessMessages;
   i:=(Sender as TImage).Tag div 100;
   j:=(Sender as TImage).Tag mod 100 div 10;
   k:=(Sender as TImage).Tag mod 10;
@@ -713,10 +726,8 @@ begin
     checkDotArr[i+1,j+1].down:=false;
     checkDotArr[i+2,j+1].up:=false;
   end;
-  if checkUser(checkDotArr, mapArr, mapLength-1, i, j, amountBorder) then
-    lbl1.Caption:='True'
-  else
-    lbl1.Caption:='False';
+  if checkUser(checkDotArr, mapArr, mapLength-1, amountBorder) then
+    UserWin;
 end;
 
 procedure TGenGame.createGameMenu(Sender: TObject; imageLocation: string; imageHeight, imageWidth, topLocation, leftLocation, amountImI, amountImJ, step: Integer; var imageArr: imageArray);
@@ -769,13 +780,13 @@ begin
   SetLength(dotArrayImage, mapLength-1, mapLength-1);
   SetLength(mapArr, mapLength, mapLength);
   SetLength(checkDotArr, mapLength+1, mapLength+1);
-  squareL:=600 div mapLength;
-  createGameMenu(GenGame, 'images\WhiteColor.png', squareL, squareL, 64, 256, mapLength, mapLength, squareL, squareArray);
-  createGameMenu(GenGame, 'images\LineImageH.png', LineWidth, squareL, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-2, squareL, lineArray1);
-  createGameMenu(GenGame, 'images\WhiteColor.png', LineWidth, squareL, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-2, squareL, spyLine1);
-  createGameMenu(GenGame, 'images\LineImageV.png', squareL, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-2, mapLength-1, squareL, lineArray2);
-  createGameMenu(GenGame, 'images\WhiteColor.png', squareL, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-2, mapLength-1, squareL, spyLine2);
-  createGameMenu(GenGame, 'images\DotImage.png', LineWidth, LineWidth, squareL + 64 - LineWidth div 2, squareL + 256 - LineWidth div 2, mapLength-1, mapLength-1, squareL, dotArrayImage);
+  squareL:=480 div (mapLength - 2);
+  createGameMenu(GenGame, 'images\WhiteColor.png', squareL, squareL, 32, 250, mapLength, mapLength, squareL, squareArray);
+  createGameMenu(GenGame, 'images\DotImage.png', LineWidth, LineWidth, squareL + 32 - LineWidth div 2, squareL + 250 - LineWidth div 2, mapLength-1, mapLength-1, squareL, dotArrayImage);
+  createGameMenu(GenGame, 'images\LineImageH.png', LineWidth, squareL-LineWidth, squareL + 32 - LineWidth div 2, squareL + 250 + LineWidth div 2, mapLength-1, mapLength-2, squareL, lineArray1);
+  createGameMenu(GenGame, 'images\LineImageV.png', squareL-LineWidth, LineWidth, squareL + 32 + LineWidth div 2, squareL + 250 - LineWidth div 2, mapLength-2, mapLength-1, squareL, lineArray2);
+  createGameMenu(GenGame, 'images\WhiteColor.png', LineWidth, squareL-LineWidth, squareL + 32 - LineWidth div 2, squareL + 250 + LineWidth div 2, mapLength-1, mapLength-2, squareL, spyLine1);
+  createGameMenu(GenGame, 'images\WhiteColor.png', squareL-LineWidth, LineWidth, squareL + 32 + LineWidth div 2, squareL + 250 - LineWidth div 2, mapLength-2, mapLength-1, squareL, spyLine2);
   Waiting.btn1.Show;
   for i:=0 to mapLength-2 do
     for j:=0 to mapLength-3 do
@@ -794,7 +805,7 @@ begin
   Waiting.btn2.Show;
 end;
 
-procedure clearGame;
+procedure TGenGame.clearGame;
 var
   i, j: Integer;
 begin
@@ -821,13 +832,15 @@ begin
   SetLength(dotArrayImage, 0, 0);
   SetLength(mapArr, 0, 0);
   SetLength(dotArr, 0, 0);
+  while firstForHint<>nil do
+    removeHeadStack(firstForHint);
 end;
 
 procedure TGenGame.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Application.ProcessMessages;
   flag:=True;
   clearGame;
+  flagForBreak:=False;
 end;
 
 procedure TGenGame.Button2Click(Sender: TObject);
@@ -876,7 +889,7 @@ begin
   Waiting.Show;
   flagforThread:=False;
   Waiting.Left:=GenGame.Left+3;
-  Waiting.Top:=GenGame.Top;
+  Waiting.Top:=GenGame.Top+25;
   firstThread.Terminate
 end;
 
@@ -901,13 +914,15 @@ begin
     secondThread.Priority:=tpTimeCritical;
     secondThread.FreeOnTerminate := True;
     secondThread.Resume;
+    GenGame.Hide;
+    btn2.Hide;
+    btn1.Show;
   end;
 end;
 
 procedure TGenGame.FormCreate(Sender: TObject);
 begin
   flag:=True;
-  flagForBreak:=false;
   sec:=StrToTime('00:00:01');
 end;
 
@@ -916,5 +931,104 @@ begin
   lbl2.Caption:=TimeToStr(StrToTime(lbl2.Caption)+sec);
 end;
 
+
+procedure TGenGame.btn1Click(Sender: TObject);
+var
+  i, j: integer;
+begin
+  SetLength(tempDotArr, mapLength+1, mapLength+1);
+  for i:=0 to mapLength do
+    for j:=0 to mapLength do
+      tempDotArr[i,j]:=dotArr[i,j];
+  counter:=0;
+  tmr2.Enabled:=True;
+  tmr1.Enabled:=False;
+  btn1.Hide;
+  btn2.Show;
+  New(firstForHint);
+  firstForHint.i:=startI;
+  firstForHint.j:=startJ;
+  firstForHint.next:=nil;
+end;
+
+procedure TGenGame.tmr2Timer(Sender: TObject);
+begin
+  if counter = 2 then
+    tempDotArr[startI, startJ].flag:=True;
+  if (tempDotArr[firstForHint^.i-1, firstForHint^.j].flag=True) and (tempDotArr[firstForHint^.i, firstForHint^.j].up=True) and (tempDotArr[firstForHint^.i-1, firstForHint^.j].down=True) then
+  begin
+    tempDotArr[firstForHint^.i, firstForHint^.j].flag:=False;
+    addInStack(firstForHint, firstForHint^.i-1, firstForHint^.j);
+    counter:=counter+1;
+    if spyLine2[firstForHint^.i-1, firstForHint^.j-1].Tag mod 10 = 0 then
+    begin
+      spyLine2[firstForHint^.i-1, firstForHint^.j-1].Tag:=spyLine2[firstForHint^.i-1, firstForHint^.j-1].Tag + 1;
+      lineArray2[firstForHint^.i-1, firstForHint^.j-1].Show;
+      checkDotArr[firstForHint^.i,firstForHint^.j].down:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j].flag:=True;
+      checkDotArr[firstForHint^.i+1,firstForHint^.j].up:=True;
+      checkDotArr[firstForHint^.i+1,firstForHint^.j].flag:=True;
+    end;
+  end
+  else if (tempDotArr[firstForHint^.i, firstForHint^.j+1].flag=True) and (tempDotArr[firstForHint^.i, firstForHint^.j].right=True) and (tempDotArr[firstForHint^.i, firstForHint^.j+1].left=True) then
+  begin
+    tempDotArr[firstForHint^.i, firstForHint^.j].flag:=False;
+    addInStack(firstForHint, firstForHint^.i, firstForHint^.j+1);
+    counter:=counter+1;
+    if spyLine1[firstForHint^.i-1, firstForHint^.j-2].Tag mod 10 = 0 then
+    begin
+      spyLine1[firstForHint^.i-1, firstForHint^.j-2].Tag:=spyLine1[firstForHint^.i-1, firstForHint^.j-2].Tag + 1;
+      lineArray1[firstForHint^.i-1, firstForHint^.j-2].Show;
+      checkDotArr[firstForHint^.i,firstForHint^.j].left:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j].flag:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j-1].right:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j-1].flag:=True;
+    end;
+  end
+  else if (tempDotArr[firstForHint^.i+1, firstForHint^.j].flag=True) and (tempDotArr[firstForHint^.i, firstForHint^.j].down=True) and (tempDotArr[firstForHint^.i+1, firstForHint^.j].up=True) then
+  begin
+    tempDotArr[firstForHint^.i, firstForHint^.j].flag:=False;
+    addInStack(firstForHint, firstForHint^.i+1, firstForHint^.j);
+    counter:=counter+1;
+    if spyLine2[firstForHint^.i-2, firstForHint^.j-1].Tag mod 10 = 0 then
+    begin
+      spyLine2[firstForHint^.i-2, firstForHint^.j-1].Tag:=spyLine2[firstForHint^.i-2, firstForHint^.j-1].Tag + 1;
+      lineArray2[firstForHint^.i-2, firstForHint^.j-1].Show;
+      checkDotArr[firstForHint^.i,firstForHint^.j].up:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j].flag:=True;
+      checkDotArr[firstForHint^.i-1,firstForHint^.j].down:=True;
+      checkDotArr[firstForHint^.i-1,firstForHint^.j].flag:=True;
+    end;
+  end
+  else if (tempDotArr[firstForHint^.i, firstForHint^.j-1].flag=True) and (tempDotArr[firstForHint^.i, firstForHint^.j].left=True) and (tempDotArr[firstForHint^.i, firstForHint^.j-1].right=True) then
+  begin
+    tempDotArr[firstForHint^.i, firstForHint^.j].flag:=False;
+    addInStack(firstForHint, firstForHint^.i, firstForHint^.j-1);
+    counter:=counter+1;
+    if spyLine1[firstForHint^.i-1, firstForHint^.j-1].Tag mod 10 = 0 then
+    begin
+      spyLine1[firstForHint^.i-1, firstForHint^.j-1].Tag:=spyLine1[firstForHint^.i-1, firstForHint^.j-1].Tag + 1;
+      lineArray1[firstForHint^.i-1, firstForHint^.j-1].Show;
+      checkDotArr[firstForHint^.i,firstForHint^.j].right:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j].flag:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j+1].left:=True;
+      checkDotArr[firstForHint^.i,firstForHint^.j+1].flag:=True;
+    end;
+  end;
+  if (startI=firstForHint.i) and (startJ=firstForHint.j) and (counter>0) then
+    btn2Click(btn2);
+end;
+
+procedure TGenGame.btn2Click(Sender: TObject);
+begin
+  if checkUser(checkDotArr, mapArr, mapLength-1, amountBorder) then
+    UserWin;
+  btn2.hide;
+  tmr2.Enabled:=False;
+  tmr1.Enabled:=True;
+  while firstForHint<>nil do
+    removeHeadStack(firstForHint);
+  SetLength(tempDotArr, 0, 0);
+end;
 
 end.

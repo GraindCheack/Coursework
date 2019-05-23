@@ -47,7 +47,6 @@ implementation
 procedure TGameSetting.btn1Click(Sender: TObject);
 begin
   mapLength := 7;
-  packImages := 1;
   LineWidth := 33;
   Close;
 end;
@@ -55,15 +54,13 @@ end;
 procedure TGameSetting.btn2Click(Sender: TObject);
 begin
   mapLength := 9;
-  packImages := 2;
-  LineWidth := 26;
+  LineWidth := 23;
   Close;
 end;
 
 procedure TGameSetting.btn3Click(Sender: TObject);
 begin
   mapLength := 11;
-  packImages := 3;
   LineWidth := 18;
   close;      
 end;

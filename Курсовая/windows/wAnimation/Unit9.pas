@@ -4,10 +4,11 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, Buttons, acPNG, StdCtrls;
+  Dialogs, ExtCtrls, Buttons, acPNG, StdCtrls, jpeg;
 
 type
   TGameAn = class(TForm)
+    img1: TImage;
     img2: TImage;
     img3: TImage;
     img4: TImage;

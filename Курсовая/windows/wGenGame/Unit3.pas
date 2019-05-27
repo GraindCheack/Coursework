@@ -623,7 +623,7 @@ begin
           first^.j:=b;
           first^.next:=nil;
           a:=0;
-          while (flag) and ((a<amountBorder-N*4) or (first^.i<>c) or (first^.j<>b)) do
+          while (flag) and ((a<6) or (first^.i<>c) or (first^.j<>b)) do
           begin
             if a=1 then
               tempDotArr[first^.next^.i, first^.next^.j].flag:=True;

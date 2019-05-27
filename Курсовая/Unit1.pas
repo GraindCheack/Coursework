@@ -48,8 +48,12 @@ procedure TGame.tmr1Timer(Sender: TObject);
 begin
   if iAn=300 then
     iAn:=0;
-  Game.img1.Picture.LoadFromFile('windows\wAnimation\animate\'+intToStr(1000+iAn)+'.png');
+  Game.img1.Picture.LoadFromFile('windows\wAnimation\animate4\'+intToStr(1000+iAn)+'.jpg');
   iAn:=iAn+1;
+  GameAn.Top:=Game.Top;
+  GameAn.Left:=Game.Left;
+  GameAn.Height:=Game.Height;
+  GameAn.Width:=Game.Width;
 end;
 
 procedure TGame.FormActivate(Sender: TObject);
@@ -64,10 +68,6 @@ begin
   threadGen := TFirstThreadGen.Create(true); // выделение памяти и само создание потока
   threadGen.FreeOnTerminate := True;
   threadGen.Resume;  // поток запускается. Выполняется Execute
-  GameAn.Top:=Game.Top;
-  GameAn.Left:=Game.Left;
-  GameAn.Height:=Game.Height;
-  GameAn.Width:=Game.Width;
   tmr1.Enabled:=True;
 end;
 

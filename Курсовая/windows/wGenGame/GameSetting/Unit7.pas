@@ -16,13 +16,13 @@ type
   end;
   TGameSetting = class(TForm)
     lbl1: TLabel;
-    Label1: TLabel;
     lbl2: TLabel;
     btn4: TSpeedButton;
     btn5: TSpeedButton;
     btn1: TSpeedButton;
     btn2: TSpeedButton;
     btn3: TSpeedButton;
+    lbl3: TLabel;
     procedure btn1Click(Sender: TObject);
     procedure btn2Click(Sender: TObject);
     procedure btn3Click(Sender: TObject);

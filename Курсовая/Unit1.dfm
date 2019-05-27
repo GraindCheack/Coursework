@@ -3,8 +3,8 @@ object Game: TGame
   Top = 199
   BorderStyle = bsSingle
   Caption = 'Game'
-  ClientHeight = 667
-  ClientWidth = 1176
+  ClientHeight = 673
+  ClientWidth = 1179
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,13 +19,13 @@ object Game: TGame
   TextHeight = 13
   object img1: TImage
     Left = -8
-    Top = -8
+    Top = 0
     Width = 1188
     Height = 678
     AutoSize = True
   end
   object tmr1: TTimer
-    Interval = 60
+    Interval = 30
     OnTimer = tmr1Timer
     Left = 48
     Top = 40
